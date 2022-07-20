@@ -98,6 +98,7 @@ setup(
                       'g2t-printlog=graph2tac.printlog:main',
                       'g2t-unpack=graph2tac.loader.unpack:main',
                       'g2t-server=graph2tac.loader.predict_server:main',
+                      'g2t-server-text=graph2tac.transformer.pserver:main',
                       'g2t-train-hmodel=graph2tac.loader.hmodel:main'
                   ]},
     license='MIT',
@@ -111,6 +112,13 @@ setup(
         'tensor2tensor',
         'dataclasses-json',
         'pyyaml',
-        'graphviz'
+        'graphviz',
+        'transformers',
+        'datasets',
+        'tokenizers',
+        'tqdm',
+        'torch',
+        'numpy',
+        'pandas'
     ]
 )
