@@ -179,11 +179,6 @@ def initialize_loop(r, s, textmode, tokenizer, model):
 
 def main():
 
-
-    
-    #tokenizer_location = "/raid/scratch/piepejel/projects/clean_install/graph2tac/graph2tac/transformer/weights/"
-    #model_location = "/raid/scratch/piepejel/projects/clean_install/graph2tac/graph2tac/transformer/weights/checkpoint-760000/pytorch_model.bin"
-
     tokenizer, model = load_eval_setup(tokenizer_location, model_location)
     print("Model Loaded")
     print(sys.stdin.fileno())
