@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
 import sys
 import socket
 import capnp
@@ -55,7 +55,7 @@ def load_eval_setup(toksave, model_location):
                         )
 
     model = GPT2LMHeadModel(config=config)
-
+    device = "cpu"
     model.load_state_dict(torch.load(model_location))
     model.eval()
 
