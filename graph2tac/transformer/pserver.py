@@ -56,7 +56,7 @@ def load_eval_setup(toksave, model_location):
 
     model = GPT2LMHeadModel(config=config)
     device = "cpu"
-    model.load_state_dict(torch.load(model_location))
+    model.load_state_dict(torch.load(model_location, map_location=torch.device('cpu')))
     model.eval()
 
 
@@ -84,6 +84,7 @@ def generate(input_proof_state, tokenizer, model):
     sample = input_proof_state + " OUTPUT"
     print("SAMPLE")
     print(sample)
+    device = "cpu"
     input_ids = tokenizer([sample], return_tensors="pt", padding=False).input_ids.to(device)
     if input_ids.shape[1] > 1024:
         raise ValueError("Input is too long")
