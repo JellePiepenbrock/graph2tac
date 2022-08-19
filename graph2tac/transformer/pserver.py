@@ -149,33 +149,35 @@ def prediction_loop_text(r, s, tokenizer, model):
             raise Exception
 
 def initialize_loop(r, s, textmode, tokenizer, model):
-    g = next(r)
-    msg_type = g.which()
-    if msg_type == "initialize":
-        while g:
-            print('---------------- New prediction context -----------------')
-            if not textmode:
-                gv.visualize_defs(g.initialize.graph, g.initialize.definitions)
-                print(g.initialize.tactics)
-            response = graph_api_capnp.PredictionProtocol.Response.new_message(initialized=None)
-            response.write_packed(s)
-            print(response)
+
+    for g in r:
+    #g = next(r)
+        msg_type = g.which()
+        if msg_type == "initialize":
+            while g:
+                print('---------------- New prediction context -----------------')
+                if not textmode:
+                    gv.visualize_defs(g.initialize.graph, g.initialize.definitions)
+                    print(g.initialize.tactics)
+                response = graph_api_capnp.PredictionProtocol.Response.new_message(initialized=None)
+                response.write_packed(s)
+                print(response)
     
-            time.sleep(1)
-            if textmode:
-                g = prediction_loop_text(r, s, tokenizer, model)
-            else:
-                tacs = list(g.initialize.tactics)
-                g = prediction_loop(r, s, tacs, g.initialize.graph, g.initialize.definitions)
-    elif msg_type == "synchronize":
-        print(g)
-        response = graph_api_capnp.PredictionProtocol.Response.new_message(synchronized=g.synchronize)
-        print(response)
-        response.write_packed(s)
-        initialize_loop(r, s, textmode, tokenizer, model)
-    else:
-        print("Capnp protocol error")
-        raise Exception
+                #time.sleep(1)
+                if textmode:
+                    g = prediction_loop_text(r, s, tokenizer, model)
+                else:
+                    tacs = list(g.initialize.tactics)
+                    g = prediction_loop(r, s, tacs, g.initialize.graph, g.initialize.definitions)
+        elif msg_type == "synchronize":
+            print(g)
+            response = graph_api_capnp.PredictionProtocol.Response.new_message(synchronized=g.synchronize)
+            print(response)
+            response.write_packed(s)
+            initialize_loop(r, s, textmode, tokenizer, model)
+        else:
+            print("Capnp protocol error")
+            raise Exception
 
 def main():
 
