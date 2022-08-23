@@ -121,7 +121,11 @@ def generate(input_proof_state, tokenizer, model):
 def prediction_loop_text(r, s, tokenizer, model):
     
     for g in r:
+        print("g")
+        print(g)
         msg_type = g.which()
+        print("innerloop: message_type")
+        print(msg_type)
         if msg_type == "predict":
             print(g.predict.state.text)
             print(generate(g.predict.state.text, tokenizer, model))
@@ -143,7 +147,7 @@ def prediction_loop_text(r, s, tokenizer, model):
             
             time.sleep(1)
         elif msg_type == "synchronize":
-            print(g)
+            print("predlooptext", g)
             response = graph_api_capnp.PredictionProtocol.Response.new_message(synchronized=g.synchronize)
             print(response)
             response.write_packed(s)
@@ -158,6 +162,8 @@ def initialize_loop(r, s, textmode, tokenizer, model):
     for g in r:
     #g = next(r)
         msg_type = g.which()
+        print("outerloop: Message type: ")
+        print(msg_type)
         if msg_type == "initialize":
             while g:
                 print('---------------- New prediction context -----------------')
@@ -175,7 +181,7 @@ def initialize_loop(r, s, textmode, tokenizer, model):
                     tacs = list(g.initialize.tactics)
                     g = prediction_loop(r, s, tacs, g.initialize.graph, g.initialize.definitions)
         elif msg_type == "synchronize":
-            print(g)
+            print("outerloop", g)
             response = graph_api_capnp.PredictionProtocol.Response.new_message(synchronized=g.synchronize)
             print(response)
             response.write_packed(s)
