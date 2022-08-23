@@ -15,13 +15,17 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Transformer Server')
 
-parser.add_argument('--model', type=str, help="Location of the transformer .bin file")
-parser.add_argument('--tokenizer', type=str, help="Location of the tokenizer files (folder)")
-parser.add_argument('--beam_width', type=int, help="How many alternative answers to keep in beam")
-args = parser.parse_args()
-model_location = args.model
-tokenizer_location= args.tokenizer
-beam_w = args.beam_width
+# parser.add_argument('--model', type=str, help="Location of the transformer .bin file")
+# parser.add_argument('--tokenizer', type=str, help="Location of the tokenizer files (folder)")
+# parser.add_argument('--beam_width', type=int, help="How many alternative answers to keep in beam")
+# args = parser.parse_args()
+# model_location = args.model
+# tokenizer_location= args.tokenizer
+# beam_w = args.beam_width
+
+model_location = "/raid/scratch/piepejel/projects/clean_install/graph2tac/graph2tac/transformer/weights/checkpoint-760000/pytorch_model.bin"
+tokenizer_location = "/raid/scratch/piepejel/projects/clean_install/graph2tac/graph2tac/transformer/weights/"
+beam_w = 5
 
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = "cpu"
