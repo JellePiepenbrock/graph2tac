@@ -87,6 +87,7 @@ def generate(input_proof_state, tokenizer, model):
 
     sample = input_proof_state + " OUTPUT"
     print("SAMPLE")
+    print("----ä")
     print(sample)
     device = "cpu"
     input_ids = tokenizer([sample], return_tensors="pt", padding=False).input_ids.to(device)
