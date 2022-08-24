@@ -86,7 +86,7 @@ def generate(input_proof_state, tokenizer, model):
     """
 
     sample = input_proof_state + " OUTPUT"
-    print("SAMPLE")
+    #print("SAMPLE")
     print("----ä")
     print(sample)
     device = "cpu"
@@ -107,50 +107,50 @@ def generate(input_proof_state, tokenizer, model):
 
     return_list = []
     for e, i in enumerate(beam_output):
-        print(input_ids.shape[1])
-        print(tokenizer.decode(i[input_ids.shape[1]:], skip_special_tokens=True))
-        print(tokenizer.decode(i, skip_special_tokens=True))
+        #print(input_ids.shape[1])
+        #print(tokenizer.decode(i[input_ids.shape[1]:], skip_special_tokens=True))
+        #print(tokenizer.decode(i, skip_special_tokens=True))
         model_suggestion = tokenizer.decode(i[input_ids.shape[1]:], skip_special_tokens=True)
         model_suggestion = model_suggestion.rstrip()
         model_suggestion = model_suggestion.lstrip()
         return_list.append(model_suggestion)
     
-    for sugg in return_list:
-        print(sugg)
+    #for sugg in return_list:
+    #    print(sugg)
     return return_list
 
 def prediction_loop_text(r, s, tokenizer, model):
     
     for g in r:
-        print("g")
-        print(g)
+        #print("g")
+        #print(g)
         msg_type = g.which()
-        print("innerloop: message_type")
-        print(msg_type)
+        #print("innerloop: message_type")
+        #print(msg_type)
         if msg_type == "predict":
-            print(g.predict.state.text)
-            print(generate(g.predict.state.text, tokenizer, model))
-            print(g.predict.state.text)
+            #print(g.predict.state.text)
+            #print(generate(g.predict.state.text, tokenizer, model))
+            #print(g.predict.state.text)
     
 
             st = time.time()
             tactics = generate(g.predict.state.text, tokenizer, model)
 
             et = time.time() - st
-            print(f"Prediction takes {et} seconds")
+            #print(f"Prediction takes {et} seconds")
             preds = [
                 {'tacticText': t,
                  'confidence': 0.5} for t in tactics ]
             response = graph_api_capnp.PredictionProtocol.Response.new_message(textPrediction=preds)
-            print("RESPONSE") 
-            print(response)
+            #print("RESPONSE") 
+            #print(response)
             response.write_packed(s)
             
             time.sleep(1)
         elif msg_type == "synchronize":
-            print("predlooptext", g)
+            #print("predlooptext", g)
             response = graph_api_capnp.PredictionProtocol.Response.new_message(synchronized=g.synchronize)
-            print(response)
+            #print(response)
             response.write_packed(s)
         elif msg_type == "initialize":
             return g
@@ -163,17 +163,17 @@ def initialize_loop(r, s, textmode, tokenizer, model):
     for g in r:
     #g = next(r)
         msg_type = g.which()
-        print("outerloop: Message type: ")
-        print(msg_type)
+        #print("outerloop: Message type: ")
+        #print(msg_type)
         if msg_type == "initialize":
             while g:
-                print('---------------- New prediction context -----------------')
+                #print('---------------- New prediction context -----------------')
                 if not textmode:
                     gv.visualize_defs(g.initialize.graph, g.initialize.definitions)
-                    print(g.initialize.tactics)
+                   # print(g.initialize.tactics)
                 response = graph_api_capnp.PredictionProtocol.Response.new_message(initialized=None)
                 response.write_packed(s)
-                print(response)
+                #print(response)
     
                 #time.sleep(1)
                 if textmode:
@@ -182,9 +182,9 @@ def initialize_loop(r, s, textmode, tokenizer, model):
                     tacs = list(g.initialize.tactics)
                     g = prediction_loop(r, s, tacs, g.initialize.graph, g.initialize.definitions)
         elif msg_type == "synchronize":
-            print("outerloop", g)
+            #print("outerloop", g)
             response = graph_api_capnp.PredictionProtocol.Response.new_message(synchronized=g.synchronize)
-            print(response)
+            #print(response)
             response.write_packed(s)
             initialize_loop(r, s, textmode, tokenizer, model)
         else:
