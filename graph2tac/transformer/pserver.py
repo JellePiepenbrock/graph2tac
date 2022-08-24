@@ -143,7 +143,7 @@ def prediction_loop_text(r, s, tokenizer, model):
                  'confidence': 0.5} for t in tactics ]
             response = graph_api_capnp.PredictionProtocol.Response.new_message(textPrediction=preds)
             #print("RESPONSE") 
-            #print(response)
+            print(response)
             response.write_packed(s)
             
             time.sleep(1)
