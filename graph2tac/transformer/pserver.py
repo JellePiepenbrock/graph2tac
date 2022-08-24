@@ -90,9 +90,11 @@ def generate(input_proof_state, tokenizer, model):
     print("----ä")
     print(sample)
     device = "cpu"
-    input_ids = tokenizer([sample], return_tensors="pt", padding=False).input_ids.to(device)
-    if input_ids.shape[1] > 1024:
-        raise ValueError("Input is too long")
+    input_ids = tokenizer([sample], max_length=900, return_tensors="pt", padding=False).input_ids.to(device)
+    
+    #if input_ids.shape[1] > 1024:
+    #    input_ids = input_ids[:, :1023]
+        # raise ValueError("Input is too long")
 
     beam_output = model.generate(
         input_ids,
