@@ -31,7 +31,8 @@ data_dirs = [p.expanduser() for p in [
             ]]
 
 data_dir = data_dirs[0]
-d = DataServer(data_dir=data_dir, encode_all=True)
+#d = DataServer(data_dir=data_dir, encode_all=True)
+d = DataServer(data_dir=data_dir)
 
 with open(export_file_train, "w") as f1:
     all_train_samples = [k for k in enumerate(d.data_train(as_text=True))]
