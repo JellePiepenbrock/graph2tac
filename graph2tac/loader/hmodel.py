@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 import tqdm
 import hashlib
@@ -7,8 +7,8 @@ import pickle
 import numpy as np
 from pathlib import Path
 
-from graph2tac.loader.data_server import DataServer
-from graph2tac.predict import Predict
+from graph2tac.loader.data_server import DataServer, LoaderProofstate, LoaderDefinition
+from graph2tac.predict import Predict, predict_api_debugging
 
 
 def my_hash(x: bytes):
@@ -32,14 +32,10 @@ def action_encode(action,
     return tactic_idx, res
 
 
-def my_hash_of(state, with_context):
-    graph, root, context = state
-    if with_context:
-        what_to_hash = tuple(*graph, context)
-    else:
-        what_to_hash = graph
+def my_hash_of(state: LoaderProofstate, with_context: bool):
+    graph, root, context, _ = state
+    what_to_hash = (*graph, context) if with_context else graph
     state_hash = my_hash(''.join(hash_nparray(x) for x in what_to_hash).encode())
-
     return state_hash
 
 
@@ -74,13 +70,14 @@ class Train:
     def train(self):
         none_counter = 0
         for state, action, idx in tqdm.tqdm(self._data_server.data_train()):
-            graph, root, context = state
+            graph, root, context, _ = state
+            local_context, _ = context
             state_hash = my_hash_of(state, self._with_context)
 
             train_action = self._data.get(state_hash, [])
             try:
                 train_action.append(action_encode(action,
-                                              local_context=context,
+                                              local_context=local_context,
                                               global_context=self._global_context))
             except IndexError:
                 none_counter += 1
@@ -100,11 +97,11 @@ class Train:
 
 
 class HPredict(Predict):
-    def __init__(self, checkpoint_dir: Path):
+    def __init__(self, checkpoint_dir: Path, debug_dir: Optional[Path] = None):
         loaded_model = pickle.load(open(checkpoint_dir/'hmodel.sav', 'rb'))
 
         # initialize self._graph_constants
-        super().__init__(graph_constants=loaded_model['graph_constants'])
+        super().__init__(graph_constants=loaded_model['graph_constants'], debug_dir=debug_dir)
 
         self._data = loaded_model['data']
         self._label_to_index = None
@@ -112,19 +109,30 @@ class HPredict(Predict):
         self._with_context = loaded_model['with_context']
         self._label_to_idx = dict()
 
+    @predict_api_debugging
     def initialize(self, global_context: Optional[List[int]] = None) -> None:
         if global_context is not None:
             for idx, label in enumerate(global_context):
                 self._label_to_idx[label] = idx
 
-    def compute_new_definitions(self, clusters: list[tuple[np.ndarray]]):
+    @predict_api_debugging
+    def compute_new_definitions(self, clusters: List[LoaderDefinition]) -> None:
         """
         a list of cluster states on which we run dummy runs
         """
         pass
 
-    def ranked_predictions(self, state: tuple, allowed_model_tactics: list, available_global=None, tactic_expand_bound=20, total_expand_bound=1000000, annotation="", debug=False):
-        graph, root, context = state
+    @predict_api_debugging
+    def ranked_predictions(self,
+                           state: LoaderProofstate,
+                           allowed_model_tactics: List[int],
+                           available_global: Optional[np.ndarray] = None,
+                           tactic_expand_bound: int = 20,
+                           total_expand_bound: int = 1000000,
+                           annotation: str = "",
+                           debug: bool = False
+                           ) -> Tuple[np.ndarray, List]:
+        graph, root, context, _ = state
         state_hash = my_hash_of(state, self._with_context)
         inverse_local_context = dict()
         for (i, node_idx) in enumerate(context):
@@ -179,7 +187,7 @@ class HPredict(Predict):
             result_pred.append(pred)
             result_val.append(val)
 
-        return result_pred, result_val
+        return np.array(result_pred), result_val
 
 def main():
     parser = argparse.ArgumentParser()

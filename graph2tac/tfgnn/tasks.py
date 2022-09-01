@@ -15,9 +15,13 @@ LOCAL_ARGUMENT_PREDICTION = 'local_argument_prediction'
 GLOBAL_ARGUMENT_PREDICTION = 'global_argument_prediction'
 
 
-def arguments_filter(y_true, y_pred):
+def arguments_filter(y_true: tf.RaggedTensor, y_pred: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
     """
     Extracts the local arguments which are not None from the ground truth and predictions
+
+    @param y_true: the labels for the arguments, with shape [batch_size, 1, None(num_arguments)]
+    @param y_pred: the logits for the arguments, with shape [batch_size, max(num_arguments), context_size]
+    @return: a tuple whose first element contains the not-None arguments, the second element being the logits corresponding to each not-None argument
     """
     # convert y_true to a dense tensor padding with -1 values (also used for None arguments);
     # remove spurious dimension (y_true was created from a non-scalar graph)
@@ -50,12 +54,12 @@ def _local_arguments_logits(scalar_proofstate_graph: tfgnn.GraphTensor,
 
     # the node ids for the local context nodes, shifted per components
     # [ batch_size, None(num_context_nodes) ]
-    context_node_ids = cumulative_sizes + scalar_proofstate_graph.context['context_node_ids']
+    local_context_ids = cumulative_sizes + scalar_proofstate_graph.context['local_context_ids']
 
     # the hidden states for the nodes in the local context
     # [ batch_size, None(num_context_nodes), hidden_size ]
     context_node_hidden_states = tf.gather(hidden_graph.node_sets['node']['hidden_state'],
-                                           context_node_ids).with_row_splits_dtype(tf.int64)
+                                           local_context_ids).with_row_splits_dtype(tf.int64)
 
     # the logits for each local context node to be each local argument
     # [ batch_size, max(num_arguments), max(num_context_nodes) ]
@@ -65,7 +69,7 @@ def _local_arguments_logits(scalar_proofstate_graph: tfgnn.GraphTensor,
 
     # a mask for the local context nodes that actually exist
     # [ batch_size,  max(num_context_nodes) ]
-    context_mask = tf.cast(tf.zeros_like(scalar_proofstate_graph.context['context_node_ids']),
+    context_mask = tf.cast(tf.zeros_like(scalar_proofstate_graph.context['local_context_ids']),
                            dtype=tf.float32).to_tensor(-float('inf'))
 
     # the masked logits
@@ -78,10 +82,13 @@ def _local_arguments_pred(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
     return tf.argmax(y_pred, axis=-1) if tf.shape(y_pred)[-1] > 0 else tf.zeros_like(y_true)
 
 
-class ArgumentSparseCategoricalCrossentropy(tf.keras.losses.Loss):
+class LocalArgumentSparseCategoricalCrossentropy(tf.keras.losses.Loss):
     """
-    Used to compute the sparse categorical crossentropy loss for the argument predictions (either local or global).
-    NOTE: `-1` arguments correspond to `None` or a different argument type, and are ignored.
+    Used to compute the sparse categorical crossentropy loss for the local argument prediction task.
+
+    NOTES:
+        - `-1` arguments correspond to `None`
+        - logits **are not** assumed to be normalized
     """
     def call(self, y_true, y_pred):
         """
@@ -91,10 +98,37 @@ class ArgumentSparseCategoricalCrossentropy(tf.keras.losses.Loss):
         """
         arguments_true, arguments_pred = arguments_filter(y_true, y_pred)
 
-        if tf.shape(arguments_pred)[-1] == 0:
+        if tf.size(arguments_pred) == 0:
+            # deal with the edge case where there is no local context or no local arguments to predict in the batch
             return tf.zeros_like(arguments_true, dtype=tf.float32)
         else:
+            # the local context is non-empty and we have at least one argument, so the following doesn't fail
             return tf.nn.sparse_softmax_cross_entropy_with_logits(arguments_true, arguments_pred)
+
+
+class GlobalArgumentSparseCategoricalCrossentropy(tf.keras.losses.Loss):
+    """
+    Used to compute the sparse categorical crossentropy loss for the global argument prediction task.
+
+    NOTES:
+        - `-1` arguments correspond to `None` or a different type of argument
+        - logits **are** assumed to be normalized
+    """
+
+    def call(self, y_true, y_pred):
+        """
+        @param y_true: ids for the arguments, with shape [ batch_size, 1, None(num_arguments) ]
+        @param y_pred: logits for each argument position, with shape [ batch_size, None(num_arguments), num_categories ]
+        @return: a vector of length equal to the total number of not-None arguments within this batch
+        """
+        arguments_true, arguments_pred = arguments_filter(y_true, y_pred)
+
+        if tf.size(arguments_pred) == 0:
+            # deal with the edge case where there is no global context or no global arguments to predict in the batch
+            return tf.zeros_like(arguments_true, dtype=tf.float32)
+        else:
+            # the context is non-empty and we have at least one argument, so the following doesn't fail
+            return -tf.gather(arguments_pred, arguments_true, batch_dims=1)
 
 
 class ArgumentSparseCategoricalAccuracy(tf.keras.metrics.SparseCategoricalAccuracy):
@@ -498,7 +532,7 @@ class LocalArgumentPrediction(PredictionTask):
     @staticmethod
     def _loss() -> Dict[str, tf.keras.losses.Loss]:
         return {LocalArgumentPrediction.TACTIC_LOGITS: tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                LocalArgumentPrediction.ARGUMENTS_LOGITS: ArgumentSparseCategoricalCrossentropy()}
+                LocalArgumentPrediction.ARGUMENTS_LOGITS: LocalArgumentSparseCategoricalCrossentropy()}
 
     @staticmethod
     def _metrics() -> Dict[str, Iterable[tf.keras.metrics.Metric]]:
@@ -588,17 +622,24 @@ class GlobalArgumentPrediction(PredictionTask):
 
         global_arguments_logits = self.global_arguments_logits(hidden_state_sequences.to_tensor())   # noqa
 
+        # normalize logits making sure the log_softmax is numerically stable
+        local_arguments_max_logit = tf.reduce_max(local_arguments_logits, axis=-1)
+        global_arguments_max_logit = tf.reduce_max(global_arguments_logits, axis=-1)
+        arguments_max_logit = tf.reduce_max(tf.stack([local_arguments_max_logit, global_arguments_max_logit], axis=-1), axis=-1, keepdims=True)
+        local_arguments_logits -= arguments_max_logit
+        global_arguments_logits -= arguments_max_logit
+
         local_arguments_logits_norm = tf.reduce_sum(tf.exp(local_arguments_logits), axis=-1, keepdims=True)
         global_arguments_logits_norm = tf.reduce_sum(tf.exp(global_arguments_logits), axis=-1, keepdims=True)
         norm = -tf.math.log(local_arguments_logits_norm + global_arguments_logits_norm)
 
-        local_arguments_logits = self.local_arguments_logits_output(local_arguments_logits + norm)
-        global_arguments_logits = self.global_arguments_logits_output(global_arguments_logits + norm)
+        normalized_local_arguments_logits = self.local_arguments_logits_output(local_arguments_logits + norm)
+        normalized_global_arguments_logits = self.global_arguments_logits_output(global_arguments_logits + norm)
 
         return GlobalArgumentModel(inputs=proofstate_graph,
                                    outputs={self.TACTIC_LOGITS: tactic_logits,
-                                            self.LOCAL_ARGUMENTS_LOGITS: local_arguments_logits,
-                                            self.GLOBAL_ARGUMENTS_LOGITS: global_arguments_logits})
+                                            self.LOCAL_ARGUMENTS_LOGITS: normalized_local_arguments_logits,
+                                            self.GLOBAL_ARGUMENTS_LOGITS: normalized_global_arguments_logits})
 
     @staticmethod
     def create_input_output(graph_tensor: tfgnn.GraphTensor) -> Tuple[Any, Dict[str, Any]]:
@@ -610,8 +651,8 @@ class GlobalArgumentPrediction(PredictionTask):
     @staticmethod
     def _loss() -> Dict[str, tf.keras.losses.Loss]:
         return {GlobalArgumentPrediction.TACTIC_LOGITS: tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                GlobalArgumentPrediction.LOCAL_ARGUMENTS_LOGITS: ArgumentSparseCategoricalCrossentropy(),
-                GlobalArgumentPrediction.GLOBAL_ARGUMENTS_LOGITS: ArgumentSparseCategoricalCrossentropy()}
+                GlobalArgumentPrediction.LOCAL_ARGUMENTS_LOGITS: GlobalArgumentSparseCategoricalCrossentropy(),
+                GlobalArgumentPrediction.GLOBAL_ARGUMENTS_LOGITS: GlobalArgumentSparseCategoricalCrossentropy()}
 
     def loss_weights(self) -> Dict[str, float]:
         return {GlobalArgumentPrediction.TACTIC_LOGITS: 1.0,
@@ -684,12 +725,21 @@ class DefinitionTask(tf.keras.layers.Layer):
         else:
             return cls(graph_embedding=graph_embedding, gnn=gnn, **config)
 
-    def call(self, definition_graph: tfgnn.GraphTensor, training: bool = False):
-        bare_graph = strip_graph(definition_graph)
-        embedded_graph = self._graph_embedding(bare_graph, training=training)
-        hidden_graph = self._gnn(embedded_graph, training=training)
+    @staticmethod
+    def _mask_defined_embeddings(scalar_definition_graph: tfgnn.GraphTensor, embedded_graph: tfgnn.GraphTensor):
+        num_definitions = tf.cast(scalar_definition_graph.context['num_definitions'], dtype=tf.int32)
+        is_defined = tf.ragged.range(scalar_definition_graph.node_sets['node'].sizes) < tf.expand_dims(num_definitions, axis=-1)
+        mask = tf.expand_dims(1 - tf.cast(is_defined.flat_values, dtype=tf.float32), axis=-1)
+        masked_hidden_state = embedded_graph.node_sets['node']['hidden_state'] * mask
+        return embedded_graph.replace_features(node_sets={'node': {'hidden_state': masked_hidden_state}})
 
-        num_definitions = definition_graph.context['num_definitions']
+    def call(self, scalar_definition_graph: tfgnn.GraphTensor, training: bool = False):
+        bare_graph = strip_graph(scalar_definition_graph)
+        embedded_graph = self._graph_embedding(bare_graph, training=training)
+        masked_embedded_graph = self._mask_defined_embeddings(scalar_definition_graph, embedded_graph)
+        hidden_graph = self._gnn(masked_embedded_graph, training=training)
+
+        num_definitions = scalar_definition_graph.context['num_definitions']
         definition_body_embeddings = self._definition_head((hidden_graph, num_definitions), training=training)
         return definition_body_embeddings
 

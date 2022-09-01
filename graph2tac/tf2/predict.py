@@ -3,11 +3,12 @@ from typing import Optional, List, Tuple
 from pathlib import Path
 import numpy as np
 import tensorflow as tf
+from graph2tac.loader.data_server import GraphConstants, LoaderProofstate, LoaderDefinition
 
 from graph2tac.tf2.graph_nn_batch import make_flat_batch_np, make_flat_batch_np_empty
 from graph2tac.tf2.graph_nn_def_batch import make_flat_def_batch_np
 from graph2tac.tf2.model import ModelWrapper, np_to_tensor, np_to_tensor_def
-from graph2tac.predict import Predict, cartesian_product, NUMPY_NDIM_LIMIT
+from graph2tac.predict import Predict, predict_api_debugging, cartesian_product, NUMPY_NDIM_LIMIT
 
 
 class TF2Predict(Predict):
@@ -18,13 +19,31 @@ class TF2Predict(Predict):
     This is usually not the weights directory, but a subdirectory corresponding
     to the particular epoch.
     """
-    def __init__(self, checkpoint_dir: Path):
+    def __init__(self, checkpoint_dir: Path, debug_dir: Optional[Path] = None):
         self.checkpoint_dir = checkpoint_dir
         self.params = ModelWrapper.get_params_from_checkpoint(checkpoint_dir)
         self.dataset_consts = self.params.dataset_consts
-        super().__init__(graph_constants=self.dataset_consts)
 
-    def initialize(self, global_context: Optional[list[int]] = None) -> None:
+        # this class uses ModelDatasetConstants while the superclass uses GraphConstants,
+        # so we convert before passing to the superclass
+        graph_constants = GraphConstants(
+            tactic_num=self.dataset_consts.tactic_num,
+            edge_label_num=self.dataset_consts.edge_label_num,
+            base_node_label_num=self.dataset_consts.base_node_label_num,
+            node_label_num=self.dataset_consts.node_label_num,
+            cluster_subgraphs_num=0, # not stored, but not something predict needs
+            tactic_index_to_numargs=self.dataset_consts.tactic_index_to_numargs,
+            tactic_index_to_string=[],  # not stored, but not something predict needs
+            tactic_index_to_hash=self.dataset_consts.tactic_index_to_hash,
+            global_context=self.dataset_consts.global_context,
+            label_to_names=self.dataset_consts.node_label_to_name,
+            label_in_spine=self.dataset_consts.node_label_in_spine,
+            max_subgraph_size=self.dataset_consts.max_subgraph_size,
+        )
+        super().__init__(graph_constants=graph_constants)
+
+    @predict_api_debugging
+    def initialize(self, global_context: Optional[List[int]] = None) -> None:
         self.params = ModelWrapper.get_params_from_checkpoint(self.checkpoint_dir)
         self.dataset_consts = self.params.dataset_consts
         assert self.dataset_consts is not None
@@ -37,9 +56,7 @@ class TF2Predict(Predict):
             if node_label_num > self.dataset_consts.node_label_num:
                 self.model_wrapper.extend_embedding_table(node_label_num)
         max_args = self.dataset_consts.tactic_max_arg_num
-        self.dummy_action = (0,
-                             np.zeros([max_args, 2]),
-        )
+        self.dummy_action = (0, np.zeros([max_args, 2]),)
         self.dummy_id = 0
         self.pred_fn = self.model_wrapper.get_predict_fn()
         self.set_def_fn = self.model_wrapper.get_set_def_fn()
@@ -49,7 +66,8 @@ class TF2Predict(Predict):
         flat_batch = np_to_tensor(flat_batch_np)
         result = self.pred_fn(flat_batch)
 
-    def compute_new_definitions(self, new_cluster_subgraphs : list) -> None:
+    @predict_api_debugging
+    def compute_new_definitions(self, new_cluster_subgraphs : List[LoaderDefinition]) -> None:
         """
         Public API. The client is supposed to call this method for a sequence of topologically sorted valid roots of
         cluster definitions. For simplicity, the client can always call this method with single-element batches in
@@ -61,7 +79,9 @@ class TF2Predict(Predict):
         flat_batch = np_to_tensor_def(flat_batch_np)
         self.set_def_fn(flat_batch)
 
-    def predict_tactic_logits(self, state: tuple) -> np.ndarray:  # [tactics]
+    def predict_tactic_logits(self,
+                              state: LoaderProofstate
+                              ) -> np.ndarray:  # [tactics]
         """
         Return logits for all possible tactics.
 
@@ -75,7 +95,7 @@ class TF2Predict(Predict):
         tactic_logits, _, _ = self.pred_fn(model_input)  # [bs, tactics], _, _
         return tactic_logits[0].numpy()
 
-    def predict_arg_logits(self, state: tuple, tactic_id: int) -> np.ndarray:  # [args, cxt]
+    def predict_arg_logits(self, state: LoaderProofstate, tactic_id: int) -> np.ndarray:  # [args, cxt]
         """
         Return logits for all possible elements of local context and all argument positions.
 
@@ -96,7 +116,11 @@ class TF2Predict(Predict):
         local_context_arg_cnt = arg_cnt * cxt_len  # how many logits there are for local context elements in all arguments
         return tf.reshape(arg_logits.values[:local_context_arg_cnt], [arg_cnt, cxt_len])
 
-    def predict_tactic_arg_logits(self, state: tuple, tactic_expand_bound, allowed_model_tactics: list, available_global):
+    def predict_tactic_arg_logits(self,
+                                  state: LoaderProofstate,
+                                  tactic_expand_bound: int,
+                                  allowed_model_tactics: List[int],
+                                  available_global: Optional[List[int]]):
         """
         returns a matrix of tactic / arg logits expanding arguments call with top_tactics
         """
@@ -110,7 +134,7 @@ class TF2Predict(Predict):
         model_input = np_to_tensor(make_flat_batch_np(batch, len(self.dataset_consts.global_context),
                                                       self.dataset_consts.tactic_max_arg_num))
         _, arg_nums, arg_logits = self.pred_fn(model_input)
-        _, _, context = state
+        _, _, context, _ = state
         cxt_len = len(context)  # this is how many local context elements there are
         arg_cnt = sum(arg_nums)
         local_context_arg_cnt = arg_cnt * cxt_len  # how many logits there are for local context elements in all arguments
@@ -124,13 +148,14 @@ class TF2Predict(Predict):
         arg_logits = tf.concat([local_arg_logits, global_arg_logits], axis = 1)
         return top_tactic_ids, tactic_logits[top_tactic_ids], arg_nums, arg_logits
 
+    @predict_api_debugging
     def ranked_predictions(self,
-                           state: Tuple,
+                           state: LoaderProofstate,
                            allowed_model_tactics: List,
                            available_global: Optional[np.ndarray] = None,
                            tactic_expand_bound=20,
                            total_expand_bound=1000000):
-        _, _, context = state
+        _, _, context, _ = state
 
         context_len = len(context)
         global_context = np.arange(len(self.dataset_consts.global_context), dtype = np.uint32)
