@@ -100,7 +100,7 @@ def generate(input_proof_state, tokenizer, model):
 
     beam_output = model.generate(
         input_ids,
-        max_length=input_ids + 50,
+        max_length=input_id.shape[1] + 50,
         num_beams=beam_w,
         early_stopping=True,
         num_return_sequences=beam_w,
