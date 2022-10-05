@@ -51,8 +51,9 @@ def load_eval_setup(toksave, model_location):
 
     config = GPT2Config(vocab_size = 3003,
                         n_positions = 1024,
-                        n_embd = 768,
-                        n_head = 12,
+                        n_embd = 48,
+                        n_head = 4,
+                        n_layer = 4
                         eos_token_id=tokenizer(["<END>"]).input_ids[0][0],
                         bos_token_id=tokenizer(["<END>"]).input_ids[0][0],
                         pad_token_id=tokenizer(["[PAD]"]).input_ids[0][0]
