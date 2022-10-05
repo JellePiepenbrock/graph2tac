@@ -89,6 +89,7 @@ def generate(input_proof_state, tokenizer, model):
     sample = input_proof_state + " OUTPUT"
     #print("SAMPLE")
     print("----ä")
+    
     print(sample)
     device = "cpu"
     input_ids = tokenizer([sample], truncation=True, max_length=900, return_tensors="pt", padding=False).input_ids.to(device)
@@ -140,7 +141,7 @@ def prediction_loop_text(r, s, tokenizer, model):
             tactics = generate(g.predict.state.text, tokenizer, model)
 
             et = time.time() - st
-            #print(f"Prediction takes {et} seconds")
+            print(f"Prediction takes {et} seconds")
             preds = [
                 {'tacticText': t,
                  'confidence': 0.5} for t in tactics ]
