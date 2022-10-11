@@ -23,9 +23,9 @@ model_location = args.model
 tokenizer_location= args.tokenizer
 beam_w = args.beam_width
 
-#model_location = "/raid/scratch/piepejel/projects/clean_install/graph2tac/graph2tac/transformer/weights/checkpoint-760000/pytorch_model.bin"
-#tokenizer_location = "/raid/scratch/piepejel/projects/clean_install/graph2tac/graph2tac/transformer/weights/"
-#beam_w = 5
+model_location = "/home/piepejel/projects/coq-gpt-train/1010/checkpoint-156000/pytorch_model.bin"
+tokenizer_location = "/home/piepejel/projects/coq-gpt-train/1010/"
+beam_w = 5
 
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = "cuda"
@@ -52,8 +52,8 @@ def load_eval_setup(toksave, model_location):
     config = GPT2Config(vocab_size = 3003,
                         n_positions = 1024,
                         n_embd = 48,
-                        n_head = 4,
-                        n_layer = 4,
+                        n_head = 12,
+                        n_layer = 6,
                         eos_token_id=tokenizer(["<END>"]).input_ids[0][0],
                         bos_token_id=tokenizer(["<END>"]).input_ids[0][0],
                         pad_token_id=tokenizer(["[PAD]"]).input_ids[0][0]
