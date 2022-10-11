@@ -28,7 +28,7 @@ beam_w = args.beam_width
 #beam_w = 5
 
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = "cpu"
+device = "cuda"
 capnp.remove_import_hook()
 
 # graph_api_capnp = pytact.common.graph_api_capnp()
@@ -60,7 +60,7 @@ def load_eval_setup(toksave, model_location):
                         )
 
     model = GPT2LMHeadModel(config=config)
-    device = "cpu"
+    device = "cuda"
     model.load_state_dict(torch.load(model_location, map_location=torch.device('cpu')))
     model.eval()
 
@@ -91,7 +91,7 @@ def generate(input_proof_state, tokenizer, model):
     print("----ä")
     
     print(sample)
-    device = "cpu"
+    device = "cuda"
     input_ids = tokenizer([sample], truncation=True, max_length=900, return_tensors="pt", padding=False).input_ids.to(device)
     
     #if input_ids.shape[1] > 1024:
