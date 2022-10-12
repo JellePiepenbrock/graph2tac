@@ -12,7 +12,7 @@ from transformers import GPT2Config
 import pkg_resources
 import time
 import argparse
-
+import pickle
 parser = argparse.ArgumentParser(description='Transformer Server')
 
 parser.add_argument('--model', type=str, help="Location of the transformer .bin file")
