@@ -25,7 +25,7 @@ beam_w = args.beam_width
 
 model_location = "/home/piepejel/projects/coq-gpt-train/1110/checkpoint-192000/pytorch_model.bin"
 tokenizer_location = "/home/piepejel/projects/coq-gpt-train/1110/"
-beam_w = 5
+beam_w = 10
 
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = "cuda"
