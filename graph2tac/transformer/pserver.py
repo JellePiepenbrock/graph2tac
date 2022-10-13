@@ -122,8 +122,8 @@ def generate(input_proof_state, tokenizer, model):
         model_suggestion = model_suggestion.lstrip()
         return_list.append(model_suggestion)
     
-    #for sugg in return_list:
-    #    print(sugg)
+    for sugg in return_list:
+        print(sugg)
     return return_list
 
 def prediction_loop_text(r, s, tokenizer, model):
@@ -137,7 +137,9 @@ def prediction_loop_text(r, s, tokenizer, model):
         if msg_type == "predict":
             #print(g.predict.state.text)
             #print(generate(g.predict.state.text, tokenizer, model))
-            #print(g.predict.state.text)
+            
+            print("STATE")
+            print(g.predict.state.text)
     
 
             st = time.time()
