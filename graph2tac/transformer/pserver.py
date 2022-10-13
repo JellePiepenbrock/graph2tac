@@ -143,7 +143,7 @@ def prediction_loop_text(r, s, tokenizer, model):
             print(g.predict.state.text)
     
 
-           st = time.time()
+            st = time.time()
             if not cheat:
                 tactics = generate(g.predict.state.text, tokenizer, model)
             elif cheat:
