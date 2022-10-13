@@ -117,7 +117,7 @@ def generate(input_proof_state, tokenizer, model):
         #print(input_ids.shape[1])
         #print(tokenizer.decode(i[input_ids.shape[1]:], skip_special_tokens=True))
         #print(tokenizer.decode(i, skip_special_tokens=True))
-        model_suggestion = tokenizer.decode(i[input_ids.shape[1]:], skip_special_tokens=True)
+        model_suggestion = tokenizer.decode(i[input_ids.shape[1]:], skip_special_tokens=True, clean_up_tokenization_spaces=False)
         model_suggestion = model_suggestion.rstrip()
         model_suggestion = model_suggestion.lstrip()
         return_list.append(model_suggestion)
