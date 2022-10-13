@@ -1,5 +1,6 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import sys
 import socket
 import capnp
