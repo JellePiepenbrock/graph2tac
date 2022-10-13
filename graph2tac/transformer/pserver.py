@@ -143,7 +143,7 @@ def prediction_loop_text(r, s, tokenizer, model):
             print(g.predict.state.text)
     
 
-            st = time.time()
+           st = time.time()
             if not cheat:
                 tactics = generate(g.predict.state.text, tokenizer, model)
             elif cheat:
@@ -158,7 +158,7 @@ def prediction_loop_text(r, s, tokenizer, model):
             print(response)
             response.write_packed(s)
             
-            time.sleep(1)
+            #time.sleep(1)
         elif msg_type == "synchronize":
             #print("predlooptext", g)
             response = graph_api_capnp.PredictionProtocol.Response.new_message(synchronized=g.synchronize)
