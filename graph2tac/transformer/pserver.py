@@ -108,7 +108,7 @@ def generate(input_proof_state, tokenizer, model):
         num_beams=10,
         early_stopping=True,
         num_return_sequences=5,
-        eos_token_i d=tokenizer(["<END>"]).input_ids[0][0],
+        eos_token_id=tokenizer(["<END>"]).input_ids[0][0],
         do_sample=False,
 
     )
