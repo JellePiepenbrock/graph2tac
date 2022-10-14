@@ -127,8 +127,8 @@ def generate(input_proof_state, tokenizer, model):
     for sugg in return_list:
         print(sugg)
     sequence_probs = torch.exp(beam_output['sequences_scores']).tolist()
-    sequence_probs_list = [k.item() for k in sequence_probs]
-    return return_list, sequence_probs_list
+    #sequence_probs_list = [k.item() for k in sequence_probs]
+    return return_list, sequence_probs
 
 def prediction_loop_text(r, s, tokenizer, model):
     
