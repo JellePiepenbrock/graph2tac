@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import sys
 import socket
@@ -64,7 +64,7 @@ def load_eval_setup(toksave, model_location):
                         )
 
     model = GPT2LMHeadModel(config=config)
-    device = "cuda:4"
+    device = "cuda"
     model.load_state_dict(torch.load(model_location, map_location=torch.device('cpu')))
     model.eval()
 
@@ -95,7 +95,7 @@ def generate(input_proof_state, tokenizer, model):
     print("----ä")
     
     print(sample)
-    device = "cuda:4"
+    device = "cuda"
     input_ids = tokenizer([sample], truncation=True, max_length=900, return_tensors="pt", padding=False).input_ids.to(device)
     
     #if input_ids.shape[1] > 1024:
