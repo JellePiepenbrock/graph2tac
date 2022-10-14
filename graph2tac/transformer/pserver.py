@@ -110,11 +110,12 @@ def generate(input_proof_state, tokenizer, model):
         num_return_sequences=5,
         eos_token_id=tokenizer(["<END>"]).input_ids[0][0],
         do_sample=False,
-
+        output_scores=True,
+        return_dict_in_generate=True,
     )
 
     return_list = []
-    for e, i in enumerate(beam_output):
+    for e, i in enumerate(beam_output['sequences']):
         #print(input_ids.shape[1])
         #print(tokenizer.decode(i[input_ids.shape[1]:], skip_special_tokens=True))
         #print(tokenizer.decode(i, skip_special_tokens=True))
@@ -125,7 +126,9 @@ def generate(input_proof_state, tokenizer, model):
     
     for sugg in return_list:
         print(sugg)
-    return return_list
+    sequence_probs = torch.exp(beam_output['sequences_scores']).tolist()
+    sequence_probs_list = [k.item() for k in sequence_probs]
+    return return_list, sequence_probs_list
 
 def prediction_loop_text(r, s, tokenizer, model):
     
@@ -145,14 +148,14 @@ def prediction_loop_text(r, s, tokenizer, model):
 
             st = time.time()
             if not cheat:
-                tactics = generate(g.predict.state.text, tokenizer, model)
+                tactics, probs = generate(g.predict.state.text, tokenizer, model)
             elif cheat:
                 tactics = [answer_dict[g.predict.state.text]]
             et = time.time() - st
             print(f"Prediction takes {et} seconds")
             preds = [
                 {'tacticText': t,
-                 'confidence': 0.5} for t in tactics ]
+                 'confidence': p} for (t, p) in zip(tactics,probs) ]
             response = graph_api_capnp.PredictionProtocol.Response.new_message(textPrediction=preds)
             #print("RESPONSE") 
             print(response)
