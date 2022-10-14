@@ -105,10 +105,10 @@ def generate(input_proof_state, tokenizer, model):
     beam_output = model.generate(
         input_ids,
         max_length=input_ids.shape[1] + 50,
-        num_beams=beam_w,
+        num_beams=10,
         early_stopping=True,
-        num_return_sequences=beam_w,
-        eos_token_id=tokenizer(["<END>"]).input_ids[0][0],
+        num_return_sequences=5,
+        eos_token_i d=tokenizer(["<END>"]).input_ids[0][0],
         do_sample=False,
 
     )
