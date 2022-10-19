@@ -156,6 +156,7 @@ def prediction_loop_text(r, s, tokenizer, model):
             preds = [
                 {'tacticText': t,
                  'confidence': p} for (t, p) in zip(tactics,probs) ]
+            print(preds)
             response = graph_api_capnp.PredictionProtocol.Response.new_message(textPrediction=preds)
             #print("RESPONSE") 
             print(response)
