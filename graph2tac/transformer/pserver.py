@@ -112,6 +112,7 @@ def generate(input_proof_state, tokenizer, model):
         do_sample=False,
         output_scores=True,
         return_dict_in_generate=True,
+        length_penalty=0,
     )
 
     return_list = []
