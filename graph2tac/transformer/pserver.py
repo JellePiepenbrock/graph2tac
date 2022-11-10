@@ -165,7 +165,7 @@ def prediction_loop_text(r, s, tokenizer, model):
                     print("------------")
                     tactics = ['auto']
                     probs = [1.0]
-                tactics = [answer_dict[g.predict.state.text]]
+                #tactics = [answer_dict[g.predict.state.text]]
             et = time.time() - st
             print(f"Prediction takes {et} seconds")
             preds = [
