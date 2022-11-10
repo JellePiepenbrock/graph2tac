@@ -14,6 +14,7 @@ import pkg_resources
 import time
 import argparse
 import pickle
+import random
 parser = argparse.ArgumentParser(description='Transformer Server')
 
 parser.add_argument('--model', type=str, help="Location of the transformer .bin file")
