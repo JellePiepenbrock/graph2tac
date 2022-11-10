@@ -30,6 +30,8 @@ beam_w = 10
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = "cuda:4"
 capnp.remove_import_hook()
+no_answers = 0
+total_reqs = 0
 
 cheat = False
 if cheat:
@@ -151,6 +153,18 @@ def prediction_loop_text(r, s, tokenizer, model):
             if not cheat:
                 tactics, probs = generate(g.predict.state.text, tokenizer, model)
             elif cheat:
+                current_proofstate = g.predict.state.text
+                total_reqs += 1
+                if current_proofstate in answer_dict:
+                    tactics = random.sample(answer_dict[current_proofstate], k = 1)
+                    probs = [1.0 for k in range(len(tactics))]
+                else:
+                    no_answers += 1
+                    print(f"No matching proofstates for {no_answers} / {total_reqs}")
+                    print(current_proofstate)
+                    print("------------")
+                    tactics = ['auto']
+                    probs = [1.0]
                 tactics = [answer_dict[g.predict.state.text]]
             et = time.time() - st
             print(f"Prediction takes {et} seconds")
