@@ -99,6 +99,7 @@ setup(
                       'g2t-unpack=graph2tac.loader.unpack:main',
                       'g2t-server=graph2tac.loader.predict_server:main',
                       'g2t-server-text=graph2tac.transformer.pserver:main',
+                      'g2t-server-text-dict=graph2tac.transformer.pserver_cheat:main',
                       'g2t-train-hmodel=graph2tac.loader.hmodel:main'
                   ]},
     license='MIT',
