@@ -34,7 +34,7 @@ capnp.remove_import_hook()
 
 cheat = True
 if cheat:
-    with open('/home/piepejel/projects/coq-gpt-train/answers.pickle', 'rb') as handle:
+    with open('/home/piepejel/projects/coq-gpt-train/data/answers.pickle', 'rb') as handle:
             answer_dict = pickle.load(handle)
 # graph_api_capnp = pytact.common.graph_api_capnp()
 # graph_api_capnp = capnp.load(graph_api_capnp)
