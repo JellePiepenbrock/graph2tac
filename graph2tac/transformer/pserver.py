@@ -166,7 +166,7 @@ def prediction_loop_text(r, s, tokenizer, model):
                     print(f"No matching proofstates for {no_answers} / {total_reqs}")
                     print(current_proofstate)
                     print("------------")
-                    tactics = ['auto']
+                    tactics = []
                     probs = [1.0]
                 #tactics = [answer_dict[g.predict.state.text]]
             et = time.time() - st
