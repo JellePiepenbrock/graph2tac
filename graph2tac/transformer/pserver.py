@@ -157,8 +157,10 @@ def prediction_loop_text(r, s, tokenizer, model):
                 current_proofstate = g.predict.state.text
                 total_reqs += 1
                 if current_proofstate in answer_dict:
-                    tactics = random.sample(answer_dict[current_proofstate], k = 1)
-                    probs = [1.0 for k in range(len(tactics))]
+                    num_answers = len(answer_dict[current_proofstate])
+                    sample_size = min(10, num_answers)
+                    tactics = random.sample(answer_dict[current_proofstate], k = sample_size)
+                    probs = [1.0/len(tactics) for k in range(len(tactics))]
                 else:
                     no_answers += 1
                     print(f"No matching proofstates for {no_answers} / {total_reqs}")
