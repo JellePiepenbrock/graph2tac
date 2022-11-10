@@ -30,8 +30,6 @@ beam_w = 10
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = "cuda:4"
 capnp.remove_import_hook()
-no_answers = 0
-total_reqs = 0
 
 cheat = True
 if cheat:
@@ -134,7 +132,9 @@ def generate(input_proof_state, tokenizer, model):
     return return_list, sequence_probs
 
 def prediction_loop_text(r, s, tokenizer, model):
-    
+        
+    no_answers = 0
+    total_reqs = 0
     for g in r:
         #print("g")
         #print(g)
