@@ -33,7 +33,7 @@ capnp.remove_import_hook()
 no_answers = 0
 total_reqs = 0
 
-cheat = False
+cheat = True
 if cheat:
     with open('/home/piepejel/projects/coq-gpt-train/answers.pickle', 'rb') as handle:
             answer_dict = pickle.load(handle)
