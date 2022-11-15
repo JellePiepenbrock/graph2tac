@@ -31,7 +31,7 @@ beam_w = 10
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = "cuda:4"
 capnp.remove_import_hook()
-
+#
 cheat = False
 if cheat:
     with open('/home/piepejel/projects/coq-gpt-train/data/answers.pickle', 'rb') as handle:
