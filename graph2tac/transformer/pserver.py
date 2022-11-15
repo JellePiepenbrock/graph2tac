@@ -32,7 +32,7 @@ beam_w = 10
 device = "cuda:4"
 capnp.remove_import_hook()
 
-cheat = True
+cheat = False
 if cheat:
     with open('/home/piepejel/projects/coq-gpt-train/data/answers.pickle', 'rb') as handle:
             answer_dict = pickle.load(handle)
@@ -152,7 +152,7 @@ def prediction_loop_text(r, s, tokenizer, model):
 
             st = time.time()
             if not cheat:
-                tactics, probs = generate(g.predict.state.text, tokenizer, model)
+                tactics, probs = generate(g.predict.state.text.lstrip(), tokenizer, model)
             elif cheat:
                 current_proofstate = g.predict.state.text.lstrip()
                 total_reqs += 1
