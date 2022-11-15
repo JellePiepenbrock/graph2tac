@@ -154,7 +154,7 @@ def prediction_loop_text(r, s, tokenizer, model):
             if not cheat:
                 tactics, probs = generate(g.predict.state.text, tokenizer, model)
             elif cheat:
-                current_proofstate = g.predict.state.text
+                current_proofstate = g.predict.state.text.lstrip()
                 total_reqs += 1
                 if current_proofstate in answer_dict:
                     num_answers = len(answer_dict[current_proofstate])
