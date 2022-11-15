@@ -159,7 +159,10 @@ def prediction_loop_text(r, s, tokenizer, model):
                 if current_proofstate in answer_dict:
                     num_answers = len(answer_dict[current_proofstate])
                     sample_size = min(10, num_answers)
+                    print(current_proofstate)
+                    
                     tactics = random.sample(answer_dict[current_proofstate], k = sample_size)
+                    print(tactics)
                     probs = [1.0/len(tactics) for k in range(len(tactics))]
                 else:
                     no_answers += 1
