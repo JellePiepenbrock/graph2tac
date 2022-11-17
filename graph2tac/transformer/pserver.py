@@ -32,7 +32,7 @@ beam_w = 10
 device = "cuda:4"
 capnp.remove_import_hook()
 #
-cheat = False
+cheat = True
 if cheat:
     with open('/home/piepejel/projects/coq-gpt-train/data/answers.pickle', 'rb') as handle:
             answer_dict = pickle.load(handle)
