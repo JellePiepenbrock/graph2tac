@@ -27,12 +27,16 @@ beam_w = args.beam_width
 
 model_location = "/home/piepejel/projects/coq-gpt-train/1110/checkpoint-3189000/pytorch_model.bin"
 tokenizer_location = "/home/piepejel/projects/coq-gpt-train/1110/"
+
+#model_location = "/home/piepejel/projects/coq-gpt-train/0112/checkpoint-3189000/pytorch_model.bin"
+#okenizer_location = "/home/piepejel/projects/coq-gpt-train/1110/"
+
 beam_w = 10
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = "cuda:4"
 capnp.remove_import_hook()
 #
-cheat = True
+cheat = False
 if cheat:
     with open('/home/piepejel/projects/coq-gpt-train/data/answers.pickle', 'rb') as handle:
             answer_dict = pickle.load(handle)
