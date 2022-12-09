@@ -25,8 +25,8 @@ model_location = args.model
 tokenizer_location= args.tokenizer
 beam_w = args.beam_width
 
-model_location = "/home/piepejel/projects/coq-gpt-train/1110/checkpoint-3189000/pytorch_model.bin"
-tokenizer_location = "/home/piepejel/projects/coq-gpt-train/1110/"
+#model_location = "/home/piepejel/projects/coq-gpt-train/1110/checkpoint-3189000/pytorch_model.bin"
+#tokenizer_location = "/home/piepejel/projects/coq-gpt-train/1110/"
 
 #model_location = "/home/piepejel/projects/coq-gpt-train/0112/checkpoint-3189000/pytorch_model.bin"
 #okenizer_location = "/home/piepejel/projects/coq-gpt-train/1110/"
