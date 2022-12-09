@@ -33,7 +33,7 @@ beam_w = args.beam_width
 
 #beam_w = 10
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = "cuda:4"
+device = "cuda:0"
 capnp.remove_import_hook()
 #
 cheat = False
