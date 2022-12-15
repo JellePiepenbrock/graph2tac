@@ -179,11 +179,11 @@ def prediction_loop_text(r, s, tokenizer, model):
                     probs = [1.0]
                 #tactics = [answer_dict[g.predict.state.text]]
             et = time.time() - st
-            #print(f"Prediction takes {et} seconds")
+            print(f"Prediction takes {et} seconds")
             preds = [
                 {'tacticText': t,
                  'confidence': p} for (t, p) in zip(tactics,probs) ]
-            print(preds)
+            #print(preds)
             response = graph_api_capnp.PredictionProtocol.Response.new_message(textPrediction=preds)
             #print("RESPONSE") 
             print(response)
