@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "4"
+#os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import sys
 import socket
@@ -60,9 +60,9 @@ def load_eval_setup(toksave, model_location):
 
     config = GPT2Config(vocab_size = 3003,
                         n_positions = 1024,
-                        n_embd = 192,
+                        n_embd = 768,
                         n_head = 12,
-                        n_layer = 8,
+                        n_layer = 12,
                         eos_token_id=tokenizer(["<END>"]).input_ids[0][0],
                         bos_token_id=tokenizer(["<END>"]).input_ids[0][0],
                         pad_token_id=tokenizer(["[PAD]"]).input_ids[0][0]
