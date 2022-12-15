@@ -150,8 +150,8 @@ def prediction_loop_text(r, s, tokenizer, model):
             #print(g.predict.state.text)
             #print(generate(g.predict.state.text, tokenizer, model))
             
-            print("STATE")
-            print(g.predict.state.text)
+            #print("STATE")
+            #print(g.predict.state.text)
     
 
             st = time.time()
@@ -163,21 +163,23 @@ def prediction_loop_text(r, s, tokenizer, model):
                 if current_proofstate in answer_dict:
                     num_answers = len(answer_dict[current_proofstate])
                     sample_size = min(10, num_answers)
-                    print(current_proofstate)
+                    #print(current_proofstate)
                     
                     tactics = random.sample(answer_dict[current_proofstate], k = sample_size)
-                    print(tactics)
+                    
+                    
+                    #print(tactics)
                     probs = [1.0/len(tactics) for k in range(len(tactics))]
                 else:
                     no_answers += 1
-                    print(f"No matching proofstates for {no_answers} / {total_reqs}")
-                    print(current_proofstate)
-                    print("------------")
+                    #print(f"No matching proofstates for {no_answers} / {total_reqs}")
+                    #print(current_proofstate)
+                    #print("------------")
                     tactics = []
                     probs = [1.0]
                 #tactics = [answer_dict[g.predict.state.text]]
             et = time.time() - st
-            print(f"Prediction takes {et} seconds")
+            #print(f"Prediction takes {et} seconds")
             preds = [
                 {'tacticText': t,
                  'confidence': p} for (t, p) in zip(tactics,probs) ]
