@@ -104,9 +104,6 @@ setup(
                   ]},
     license='MIT',
     install_requires=[
-        'keras>=2.8',
-        'tensorflow>=2.8',
-        'tensorflow_gnn>=0.2.0.dev1',
         'tqdm',
         'numpy',
         'fire',

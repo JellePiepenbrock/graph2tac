@@ -43,7 +43,7 @@ if cheat:
 # graph_api_capnp = pytact.common.graph_api_capnp()
 # graph_api_capnp = capnp.load(graph_api_capnp)
 
-graph_api_filename = pkg_resources.resource_filename('graph2tac.loader','clib/graph_api_v11.capnp')
+graph_api_filename = pkg_resources.resource_filename('graph2tac.loader','clib/graph_api_v14.capnp')
 graph_api_capnp = capnp.load(graph_api_filename)
 
 def load_eval_setup(toksave, model_location):
@@ -96,8 +96,9 @@ def generate(input_proof_state, tokenizer, model):
     """
 
     sample = input_proof_state + " OUTPUT"
-    #print("SAMPLE")
-    print("----ä")
+    print("SAMPLE")
+
+    #print("----ä")
     
     print(sample)
     device = "cuda"
@@ -142,16 +143,16 @@ def prediction_loop_text(r, s, tokenizer, model):
     total_reqs = 0
     for g in r:
         #print("g")
-        #print(g)
+        print(g)
         msg_type = g.which()
-        #print("innerloop: message_type")
-        #print(msg_type)
+        print("innerloop: message_type")
+        print(msg_type)
         if msg_type == "predict":
             #print(g.predict.state.text)
             #print(generate(g.predict.state.text, tokenizer, model))
             
-            #print("STATE")
-            #print(g.predict.state.text)
+            print("STATE")
+            print(g.predict.state.text)
     
 
             st = time.time()
@@ -206,8 +207,8 @@ def initialize_loop(r, s, textmode, tokenizer, model):
     for g in r:
     #g = next(r)
         msg_type = g.which()
-        #print("outerloop: Message type: ")
-        #print(msg_type)
+        print("outerloop: Message type: ")
+        print(msg_type)
         if msg_type == "initialize":
             while g:
                 #print('---------------- New prediction context -----------------')
