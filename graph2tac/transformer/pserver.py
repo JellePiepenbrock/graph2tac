@@ -20,11 +20,13 @@ parser = argparse.ArgumentParser(description='Transformer Server')
 parser.add_argument('--model', type=str, help="Location of the transformer .bin file")
 parser.add_argument('--tokenizer', type=str, help="Location of the tokenizer files (folder)")
 parser.add_argument('--beam_width', type=int, help="How many alternative answers to keep in beam")
+parser.add_argument('--dev', type=str, help="cuda | cpu", default="cuda")
+
 args = parser.parse_args()
 model_location = args.model
 tokenizer_location= args.tokenizer
 beam_w = args.beam_width
-
+device = args.dev
 #model_location = "/home/piepejel/projects/coq-gpt-train/1110/checkpoint-3189000/pytorch_model.bin"
 #tokenizer_location = "/home/piepejel/projects/coq-gpt-train/1110/"
 
@@ -32,8 +34,9 @@ beam_w = args.beam_width
 #okenizer_location = "/home/piepejel/projects/coq-gpt-train/1110/"
 
 #beam_w = 10
+# device = "cuda"
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = "cuda:0"
+
 capnp.remove_import_hook()
 #
 cheat = False
@@ -69,16 +72,13 @@ def load_eval_setup(toksave, model_location):
                         )
 
     model = GPT2LMHeadModel(config=config)
-    device = "cuda"
+
     model.load_state_dict(torch.load(model_location, map_location=torch.device('cpu')))
     model.eval()
-
 
     model = model.to(device)
 
     return tokenizer, model
-
-
 
 def generate(input_proof_state, tokenizer, model):
     """"
@@ -101,7 +101,7 @@ def generate(input_proof_state, tokenizer, model):
     #print("----ä")
     
     print(sample)
-    device = "cuda"
+
     input_ids = tokenizer([sample], truncation=True, max_length=900, return_tensors="pt", padding=False).input_ids.to(device)
     
     #if input_ids.shape[1] > 1024:
@@ -111,9 +111,9 @@ def generate(input_proof_state, tokenizer, model):
     beam_output = model.generate(
         input_ids,
         max_length=input_ids.shape[1] + 50,
-        num_beams=10,
+        num_beams=beam_w,
         early_stopping=True,
-        num_return_sequences=10,
+        num_return_sequences=beam_w,
         eos_token_id=tokenizer(["<END>"]).input_ids[0][0],
         do_sample=False,
         output_scores=True,
@@ -240,7 +240,7 @@ def main():
     tokenizer, model = load_eval_setup(tokenizer_location, model_location)
     print("Model Loaded")
     print(sys.stdin.fileno())
-    
+
 
     host = '127.0.0.1'
     port = 33333
