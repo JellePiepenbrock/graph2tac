@@ -21,12 +21,18 @@ parser.add_argument('--model', type=str, help="Location of the transformer .bin 
 parser.add_argument('--tokenizer', type=str, help="Location of the tokenizer files (folder)")
 parser.add_argument('--beam_width', type=int, help="How many alternative answers to keep in beam")
 parser.add_argument('--dev', type=str, help="cuda | cpu", default="cuda")
+parser.add_argument('--pt_threads', type=int, help="maximum threads for PyTorch", default=1)
+
 
 args = parser.parse_args()
 model_location = args.model
 tokenizer_location= args.tokenizer
 beam_w = args.beam_width
 device = args.dev
+n_threads = args.pt_threads
+
+torch.set_num_threads(n_threads)
+torch.set_num_interop_threads(n_threads)
 #model_location = "/home/piepejel/projects/coq-gpt-train/1110/checkpoint-3189000/pytorch_model.bin"
 #tokenizer_location = "/home/piepejel/projects/coq-gpt-train/1110/"
 
