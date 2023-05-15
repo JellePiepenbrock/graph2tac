@@ -52,7 +52,7 @@ if cheat:
 # graph_api_capnp = pytact.common.graph_api_capnp()
 # graph_api_capnp = capnp.load(graph_api_capnp)
 
-graph_api_filename = pkg_resources.resource_filename('graph2tac.loader','clib/graph_api_v14.capnp')
+graph_api_filename = pkg_resources.resource_filename('graph2tac.loader','clib/graph_api_v15.capnp')
 graph_api_capnp = capnp.load(graph_api_filename)
 
 def load_eval_setup(toksave, model_location):
