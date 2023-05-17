@@ -106,7 +106,7 @@ def generate(input_proof_state, tokenizer, model):
 
     #print("----ä")
     
-    print(sample)
+    #print(sample)
 
     input_ids = tokenizer([sample], truncation=True, max_length=900, return_tensors="pt", padding=False).input_ids.to(device)
     
@@ -137,8 +137,8 @@ def generate(input_proof_state, tokenizer, model):
         model_suggestion = model_suggestion.lstrip()
         return_list.append(model_suggestion)
     
-    for sugg in return_list:
-        print(sugg)
+    #for sugg in return_list:
+    #    print(sugg)
     sequence_probs = torch.exp(beam_output['sequences_scores']).tolist()
     #sequence_probs_list = [k.item() for k in sequence_probs]
     return return_list, sequence_probs
@@ -149,16 +149,16 @@ def prediction_loop_text(r, s, tokenizer, model):
     total_reqs = 0
     for g in r:
         #print("g")
-        print(g)
+        #print(g)
         msg_type = g.which()
-        print("innerloop: message_type")
-        print(msg_type)
+        #print("innerloop: message_type")
+        #print(msg_type)
         if msg_type == "predict":
             #print(g.predict.state.text)
             #print(generate(g.predict.state.text, tokenizer, model))
             
-            print("STATE")
-            print(g.predict.state.text)
+            #print("STATE")
+            #print(g.predict.state.text)
     
 
             st = time.time()
@@ -186,14 +186,14 @@ def prediction_loop_text(r, s, tokenizer, model):
                     probs = [1.0]
                 #tactics = [answer_dict[g.predict.state.text]]
             et = time.time() - st
-            print(f"Prediction takes {et} seconds")
+            #print(f"Prediction takes {et} seconds")
             preds = [
                 {'tacticText': t,
                  'confidence': p} for (t, p) in zip(tactics,probs) ]
             #print(preds)
             response = graph_api_capnp.PredictionProtocol.Response.new_message(textPrediction=preds)
             #print("RESPONSE") 
-            print(response)
+            #print(response)
             response.write_packed(s)
             
             #time.sleep(1)
@@ -213,8 +213,8 @@ def initialize_loop(r, s, textmode, tokenizer, model):
     for g in r:
     #g = next(r)
         msg_type = g.which()
-        print("outerloop: Message type: ")
-        print(msg_type)
+        #print("outerloop: Message type: ")
+        #print(msg_type)
         if msg_type == "initialize":
             while g:
                 #print('---------------- New prediction context -----------------')
