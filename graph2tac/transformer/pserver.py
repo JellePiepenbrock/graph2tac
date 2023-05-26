@@ -22,7 +22,7 @@ parser.add_argument('--tokenizer', type=str, help="Location of the tokenizer fil
 parser.add_argument('--beam_width', type=int, help="How many alternative answers to keep in beam")
 parser.add_argument('--dev', type=str, help="cuda | cpu", default="cuda")
 parser.add_argument('--pt_threads', type=int, help="maximum threads for PyTorch", default=1)
-
+parser.add_argument('--temp', type=float, help="temperature for softmax", default=1.0)
 
 args = parser.parse_args()
 model_location = args.model
@@ -30,6 +30,7 @@ tokenizer_location= args.tokenizer
 beam_w = args.beam_width
 device = args.dev
 n_threads = args.pt_threads
+temperature = args.temp
 
 torch.set_num_threads(n_threads)
 torch.set_num_interop_threads(n_threads)
@@ -125,6 +126,7 @@ def generate(input_proof_state, tokenizer, model):
         output_scores=True,
         return_dict_in_generate=True,
         length_penalty=0,
+        temperature=temperature,
     )
 
     return_list = []
