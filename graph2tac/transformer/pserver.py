@@ -92,6 +92,11 @@ def load_eval_setup(toksave, model_location):
 
     model.load_state_dict(torch.load(model_location, map_location=torch.device('cpu')))
     model.eval()
+    if device == "cuda":
+        DEVICE_ID_LIST = GPUtil.getFirstAvailable(order='memory', maxLoad=0.8, maxMemory=0.8, attempts=1, interval=900,
+                                                  verbose=False)
+        DEVICE_ID = DEVICE_ID_LIST[0]
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(DEVICE_ID)
 
     model = model.to(device)
 
