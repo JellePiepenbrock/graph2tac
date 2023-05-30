@@ -1,7 +1,8 @@
 import os
 #os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 import random
-os.environ["CUDA_VISIBLE_DEVICES"] = f"{random.randint(0,7)}" # pick a random gpu
+# os.environ["CUDA_VISIBLE_DEVICES"] = f"{random.randint(0,7)}" # pick a random gpu
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import sys
 import socket
@@ -36,8 +37,10 @@ n_threads = args.pt_threads
 temperature = args.temp
 
 if device == "cuda":
-    device = GPUtil.getFirstAvailable(order='memory', maxLoad=0.8, maxMemory=0.8, attempts=1, interval=900,
+    DEVICE_ID_LIST  = GPUtil.getFirstAvailable(order='memory', maxLoad=0.8, maxMemory=0.8, attempts=1, interval=900,
                                         verbose=False)
+    DEVICE_ID = DEVICE_ID_LIST[0]
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(DEVICE_ID)
 
 torch.set_num_threads(n_threads)
 torch.set_num_interop_threads(n_threads)
