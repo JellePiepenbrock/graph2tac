@@ -117,6 +117,7 @@ setup(
         'tqdm',
         'torch',
         'numpy',
-        'pandas'
+        'pandas',
+        'gputil'
     ]
 )

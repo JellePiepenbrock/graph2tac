@@ -16,6 +16,7 @@ import pkg_resources
 import time
 import argparse
 import pickle
+ímport GPUtil
 
 parser = argparse.ArgumentParser(description='Transformer Server')
 
@@ -33,6 +34,10 @@ beam_w = args.beam_width
 device = args.dev
 n_threads = args.pt_threads
 temperature = args.temp
+
+if device == "cuda":
+    device = GPUtil.getFirstAvailable(order='memory', maxLoad=0.8, maxMemory=0.8, attempts=1, interval=900,
+                                        verbose=False)
 
 torch.set_num_threads(n_threads)
 torch.set_num_interop_threads(n_threads)
