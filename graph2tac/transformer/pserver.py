@@ -1,8 +1,8 @@
 import os
 #os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 import random
-# os.environ["CUDA_VISIBLE_DEVICES"] = f"{random.randint(0,7)}" # pick a random gpu
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = f"{random.randint(0,7)}" # pick a random gpu
+# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import sys
 import socket
@@ -30,17 +30,17 @@ parser.add_argument('--temp', type=float, help="temperature for softmax", defaul
 
 args = parser.parse_args()
 model_location = args.model
-tokenizer_location= args.tokenizer
+tokenizer_location = args.tokenizer
 beam_w = args.beam_width
 device = args.dev
 n_threads = args.pt_threads
 temperature = args.temp
 
-if device == "cuda":
-    DEVICE_ID_LIST  = GPUtil.getFirstAvailable(order='memory', maxLoad=0.8, maxMemory=0.8, attempts=1, interval=900,
-                                        verbose=False)
-    DEVICE_ID = DEVICE_ID_LIST[0]
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(DEVICE_ID)
+# if device == "cuda":
+#     DEVICE_ID_LIST  = GPUtil.getFirstAvailable(order='memory', maxLoad=0.8, maxMemory=0.8, attempts=1, interval=900,
+#                                         verbose=False)
+#     DEVICE_ID = DEVICE_ID_LIST[0]
+#     os.environ["CUDA_VISIBLE_DEVICES"] = str(DEVICE_ID)
 
 torch.set_num_threads(n_threads)
 torch.set_num_interop_threads(n_threads)
@@ -90,15 +90,10 @@ def load_eval_setup(toksave, model_location):
 
     model = GPT2LMHeadModel(config=config)
 
-    model.load_state_dict(torch.load(model_location, map_location=torch.device('cpu')))
+    model.load_state_dict(torch.load(model_location, map_location=torch.device(f"{device}")))
     model.eval()
-    if device == "cuda":
-        DEVICE_ID_LIST = GPUtil.getFirstAvailable(order='memory', maxLoad=0.8, maxMemory=0.8, attempts=1, interval=900,
-                                                  verbose=False)
-        DEVICE_ID = DEVICE_ID_LIST[0]
-        os.environ["CUDA_VISIBLE_DEVICES"] = str(DEVICE_ID)
 
-    model = model.to(device)
+    # model = model.to(device)
 
     return tokenizer, model
 
