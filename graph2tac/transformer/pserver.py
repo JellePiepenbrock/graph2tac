@@ -1,5 +1,7 @@
 import os
 #os.environ["CUDA_VISIBLE_DEVICES"] = "4"
+import random
+os.environ["CUDA_VISIBLE_DEVICES"] = f"{random.randint(0,7)}" # pick a random gpu
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import sys
 import socket
@@ -14,7 +16,7 @@ import pkg_resources
 import time
 import argparse
 import pickle
-import random
+
 parser = argparse.ArgumentParser(description='Transformer Server')
 
 parser.add_argument('--model', type=str, help="Location of the transformer .bin file")
