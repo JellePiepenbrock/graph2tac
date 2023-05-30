@@ -17,7 +17,7 @@ import pkg_resources
 import time
 import argparse
 import pickle
-ímport GPUtil
+import GPUtil
 
 parser = argparse.ArgumentParser(description='Transformer Server')
 
