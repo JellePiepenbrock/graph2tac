@@ -90,10 +90,10 @@ def load_eval_setup(toksave, model_location):
 
     model = GPT2LMHeadModel(config=config)
 
-    model.load_state_dict(torch.load(model_location, map_location=torch.device(f"{device}")))
+    model.load_state_dict(torch.load(model_location, map_location=torch.device('cpu')))
     model.eval()
 
-    # model = model.to(device)
+    model = model.to(device)
 
     return tokenizer, model
 
