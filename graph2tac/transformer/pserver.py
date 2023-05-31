@@ -102,7 +102,7 @@ def load_eval_setup(toksave, model_location):
 
 def generate(input_proof_state, tokenizer, model):
     """"
-    Beam search with width 10, returns best 10 sequences.
+    Beam search with width beam_w, returns best beam_w sequences.
 
     Input:
 
@@ -122,7 +122,7 @@ def generate(input_proof_state, tokenizer, model):
     
     #print(sample)
 
-    input_ids = tokenizer([sample], truncation=True, max_length=900, return_tensors="pt", padding=False).input_ids.to(device)
+    input_ids = tokenizer([sample], truncation=True, max_length=970, return_tensors="pt", padding=False).input_ids.to(device)
     
     #if input_ids.shape[1] > 1024:
     #    input_ids = input_ids[:, :1023]
