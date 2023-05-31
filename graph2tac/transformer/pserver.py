@@ -193,29 +193,9 @@ def prediction_loop_text(r, s, tokenizer, model):
     
 
             st = time.time()
-            if not cheat:
-                tactics, probs = generate(g.predict.state.text.lstrip(), tokenizer, model)
-            elif cheat:
-                current_proofstate = g.predict.state.text.lstrip()
-                total_reqs += 1
-                if current_proofstate in answer_dict:
-                    num_answers = len(answer_dict[current_proofstate])
-                    sample_size = min(10, num_answers)
-                    #print(current_proofstate)
-                    
-                    tactics = random.sample(answer_dict[current_proofstate], k = sample_size)
-                    
-                    
-                    #print(tactics)
-                    probs = [1.0/len(tactics) for k in range(len(tactics))]
-                else:
-                    no_answers += 1
-                    #print(f"No matching proofstates for {no_answers} / {total_reqs}")
-                    #print(current_proofstate)
-                    #print("------------")
-                    tactics = []
-                    probs = [1.0]
-                #tactics = [answer_dict[g.predict.state.text]]
+
+            tactics, probs = generate(g.predict.state.text.lstrip(), tokenizer, model)
+
             et = time.time() - st
             #print(f"Prediction takes {et} seconds")
             preds = [
