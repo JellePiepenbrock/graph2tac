@@ -27,6 +27,9 @@ parser.add_argument('--beam_width', type=int, help="How many alternative answers
 parser.add_argument('--dev', type=str, help="cuda | cpu", default="cuda")
 parser.add_argument('--pt_threads', type=int, help="maximum threads for PyTorch", default=1)
 parser.add_argument('--temp', type=float, help="temperature for softmax", default=1.0)
+parser.add_argument('--sample', type=int, help="use top-k sampling | off by default", default=0)
+parser.add_argument('--topk', type=int, help="number of tokens to take into account in top_k sampling - needs to be set if --sample is on.", default=-1)
+parser.add_argument('--truncate_side', type=str, help= "left or right truncation of proof states that are too long", default="right")
 
 args = parser.parse_args()
 model_location = args.model
@@ -35,6 +38,12 @@ beam_w = args.beam_width
 device = args.dev
 n_threads = args.pt_threads
 temperature = args.temp
+sampling_on = bool(args.sample)
+topk = args.topk
+truncate_side = args.truncate_side
+
+if topk == -1 and sampling_on:
+    raise ValueError("you turned on top k sampling, supply a number to --topk; for example 20")
 
 # if device == "cuda":
 #     DEVICE_ID_LIST  = GPUtil.getFirstAvailable(order='memory', maxLoad=0.8, maxMemory=0.8, attempts=1, interval=900,
@@ -95,6 +104,9 @@ def load_eval_setup(toksave, model_location):
 
     model = model.to(device)
 
+    if truncate_side == "left":
+        tokenizer.truncation_side = 'left'
+
     return tokenizer, model
 
 def generate(input_proof_state, tokenizer, model):
@@ -124,20 +136,36 @@ def generate(input_proof_state, tokenizer, model):
     #if input_ids.shape[1] > 1024:
     #    input_ids = input_ids[:, :1023]
         # raise ValueError("Input is too long")
+    if not sampling_on:
 
-    beam_output = model.generate(
-        input_ids,
-        max_length=input_ids.shape[1] + 50,
-        num_beams=beam_w,
-        early_stopping=True,
-        num_return_sequences=beam_w,
-        eos_token_id=tokenizer(["<END>"]).input_ids[0][0],
-        do_sample=False,
-        output_scores=True,
-        return_dict_in_generate=True,
-        length_penalty=0,
-        temperature=temperature,
-    )
+        beam_output = model.generate(
+            input_ids,
+            max_length=input_ids.shape[1] + 50,
+            num_beams=beam_w,
+            early_stopping=True,
+            num_return_sequences=beam_w,
+            eos_token_id=tokenizer(["<END>"]).input_ids[0][0],
+            do_sample=False,
+            output_scores=True,
+            return_dict_in_generate=True,
+            length_penalty=0,
+            temperature=temperature,
+        )
+    else:
+        beam_output = model.generate(
+            input_ids,
+            max_length=input_ids.shape[1] + 50,
+            num_beams=beam_w,
+            early_stopping=True,
+            num_return_sequences=beam_w,
+            eos_token_id=tokenizer(["<END>"]).input_ids[0][0],
+            do_sample=True,
+            output_scores=True,
+            top_k=topk,
+            return_dict_in_generate=True,
+            length_penalty=0,
+            temperature=temperature,
+        )
 
     return_list = []
     for e, i in enumerate(beam_output['sequences']):
