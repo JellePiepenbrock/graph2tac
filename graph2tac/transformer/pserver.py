@@ -53,22 +53,13 @@ if topk == -1 and sampling_on:
 
 torch.set_num_threads(n_threads)
 torch.set_num_interop_threads(n_threads)
-#model_location = "/home/piepejel/projects/coq-gpt-train/1110/checkpoint-3189000/pytorch_model.bin"
-#tokenizer_location = "/home/piepejel/projects/coq-gpt-train/1110/"
-
-#model_location = "/home/piepejel/projects/coq-gpt-train/0112/checkpoint-3189000/pytorch_model.bin"
-#okenizer_location = "/home/piepejel/projects/coq-gpt-train/1110/"
 
 #beam_w = 10
 # device = "cuda"
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 capnp.remove_import_hook()
-#
-cheat = False
-if cheat:
-    with open('/home/piepejel/projects/coq-gpt-train/data/answers.pickle', 'rb') as handle:
-            answer_dict = pickle.load(handle)
+
 # graph_api_capnp = pytact.common.graph_api_capnp()
 # graph_api_capnp = capnp.load(graph_api_capnp)
 
