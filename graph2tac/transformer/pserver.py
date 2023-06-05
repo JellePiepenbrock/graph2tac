@@ -116,7 +116,7 @@ def generate(input_proof_state, tokenizer, model):
     """
 
     sample = input_proof_state + " OUTPUT"
-    print("SAMPLE")
+    # print("SAMPLE")
 
     #print("----ä")
     
@@ -255,8 +255,8 @@ def initialize_loop(r, s, textmode, tokenizer, model):
 def main():
         
     tokenizer, model = load_eval_setup(tokenizer_location, model_location)
-    print("Model Loaded")
-    print(sys.stdin.fileno())
+    # print("Model Loaded")
+    # print(sys.stdin.fileno())
 
 
     host = '127.0.0.1'
