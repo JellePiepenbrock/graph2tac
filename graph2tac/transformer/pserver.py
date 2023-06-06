@@ -46,6 +46,8 @@ temperature = args.temp
 sampling_on = bool(args.sample)
 topk = args.topk
 truncate_side = args.truncate_side
+logspace = False
+log_base = -1
 
 if topk == -1 and sampling_on:
     raise ValueError("you turned on top k sampling, supply a number to --topk; for example 20")
@@ -70,6 +72,12 @@ capnp.remove_import_hook()
 
 graph_api_filename = pkg_resources.resource_filename('graph2tac.loader','clib/graph_api_v15.capnp')
 graph_api_capnp = capnp.load(graph_api_filename)
+
+def log_normalize(x):
+
+    temp = torch.logsumexp(x, dim=0)
+
+    return x - temp
 
 # Special forward to control temperature directly.
 class CustomGPT2LMHeadModel(GPT2LMHeadModel):
@@ -198,11 +206,11 @@ def generate(input_proof_state, tokenizer, model):
     """
 
     sample = input_proof_state + " OUTPUT"
-    # print("SAMPLE")
+    print("SAMPLE")
 
     #print("----ä")
     
-    #print(sample)
+    print(sample)
 
     input_ids = tokenizer([sample], truncation=True, max_length=970, return_tensors="pt", padding=False).input_ids.to(device)
     
@@ -251,9 +259,22 @@ def generate(input_proof_state, tokenizer, model):
     
     #for sugg in return_list:
     #    print(sugg)
-    sequence_probs = torch.exp(beam_output['sequences_scores']).tolist()
+
+    # sequence_probs = torch.exp(beam_output['sequences_scores']).tolist()
+    if not logspace:
+        seq_probs = torch.exp(beam_output['sequences_scores'])
+
+        normalized_sequence_probs = seq_probs / torch.sum(seq_probs)
+    else:
+        if log_base == -1:
+            # ln base
+            normalized_sequence_probs = log_normalize(beam_output['sequences_scores'])
+        else:
+            # change of base: log_2 (x) = log_e(x) / log_e(2)
+            normalized_sequence_probs = log_normalize(beam_output['sequences_scores']) / torch.log(torch.tensor(log_base))
     #sequence_probs_list = [k.item() for k in sequence_probs]
-    return return_list, sequence_probs
+
+    return return_list, normalized_sequence_probs.tolist()
 
 def prediction_loop_text(r, s, tokenizer, model):
         
