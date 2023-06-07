@@ -46,7 +46,7 @@ temperature = args.temp
 sampling_on = bool(args.sample)
 topk = args.topk
 truncate_side = args.truncate_side
-logspace = False
+logspace = True
 log_base = -1
 
 if topk == -1 and sampling_on:
