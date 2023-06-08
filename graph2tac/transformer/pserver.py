@@ -35,6 +35,8 @@ parser.add_argument('--temp', type=float, help="temperature for softmax", defaul
 parser.add_argument('--sample', type=int, help="use top-k sampling | off by default", default=0)
 parser.add_argument('--topk', type=int, help="number of tokens to take into account in top_k sampling - needs to be set if --sample is on.", default=-1)
 parser.add_argument('--truncate_side', type=str, help= "left or right truncation of proof states that are too long", default="right")
+parser.add_argument('--emb_size', type=int, help="embeddin size", default=768)
+parser.add_argument('--layers', type=int, help="transformer layers", default=12)
 
 args = parser.parse_args()
 model_location = args.model
@@ -48,6 +50,8 @@ topk = args.topk
 truncate_side = args.truncate_side
 logspace = True
 log_base = -1
+n_layers = args.layers
+emb_size = args.emb_size
 
 if topk == -1 and sampling_on:
     raise ValueError("you turned on top k sampling, supply a number to --topk; for example 20")
@@ -170,9 +174,9 @@ def load_eval_setup(toksave, model_location):
 
     config = GPT2Config(vocab_size = 3003,
                         n_positions = 1024,
-                        n_embd = 768,
+                        n_embd = emb_size,
                         n_head = 12,
-                        n_layer = 12,
+                        n_layer = n_layers,
                         eos_token_id=tokenizer(["<END>"]).input_ids[0][0],
                         bos_token_id=tokenizer(["<END>"]).input_ids[0][0],
                         pad_token_id=tokenizer(["[PAD]"]).input_ids[0][0]
