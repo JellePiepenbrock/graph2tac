@@ -111,7 +111,7 @@ setup(
         'dataclasses-json',
         'pyyaml',
         'graphviz',
-        'transformers',
+        'transformers==4.29.2',
         'datasets',
         'tokenizers',
         'tqdm',
